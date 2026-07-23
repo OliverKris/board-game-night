@@ -10,8 +10,12 @@ router = APIRouter(prefix="/games", tags=["Games"])
 
 
 @router.post("", response_model=schemas.GameOut)
-def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
-    db_game = models.Game(**game.dict())
+def create_game(
+    game: schemas.GameCreate, 
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user_id),
+):
+    db_game = models.Game(**game.model_dump())
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
@@ -21,6 +25,5 @@ def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[schemas.GameOut])
 def list_games(
     db: Session = Depends(get_db),
-    curr_user: TokenData = Depends(get_current_user_id)
 ):
     return db.query(models.Game).all()

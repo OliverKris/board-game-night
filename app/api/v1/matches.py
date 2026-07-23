@@ -3,13 +3,18 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
+from app.api.dependencies import get_current_user_id
 
 router = APIRouter(prefix="/matches", tags=["Matches"])
 
 
 @router.post("", response_model=schemas.MatchRequestOut)
-def create_match_request(req: schemas.MatchRequestCreate, db: Session = Depends(get_db)):
-    db_req = models.MatchRequest(user_id=req.user_id, game_id=req.game_id)
+def create_match_request(
+    req: schemas.MatchRequestCreate, 
+    db: Session = Depends(get_db),
+    current_user: schemas.TokenData = Depends(get_current_user_id)
+):
+    db_req = models.MatchRequest(user_id=current_user.user_id, game_id=req.game_id)
     db.add(db_req)
     db.commit()
     db.refresh(db_req)
