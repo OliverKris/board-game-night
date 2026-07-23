@@ -15,8 +15,7 @@ def create_event(
     current_user: schemas.TokenData = Depends(get_current_user_id)
 ):
     # Force the creator to be the authenticated user
-    event_data = event.model_dump(exclude={"created_by"})
-    db_event = models.Event(**event_data, created_by=current_user.user_id)
+    db_event = models.Event(**event.model_dump(), created_by=current_user.user_id)
     db.add(db_event)
     db.flush()  # Flushes db_event to generate its ID without committing the transaction yet
 
@@ -55,7 +54,7 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
 @router.post("/{event_id}/rsvp", response_model=schemas.EventAttendeeOut)
 def rsvp_to_event(
     event_id: int, 
-    rsvp: schemas.EventAttendeeOut,  # Contains only rsvp_status (e.g. "going", "maybe", "declined")
+    rsvp: schemas.EventAttendeeCreate,
     db: Session = Depends(get_db),
     current_user: schemas.TokenData = Depends(get_current_user_id)
 ):

@@ -38,10 +38,24 @@ class UserOut(BaseModel):
     id: UUID
     name: str
     email: EmailStr
+    city: Optional[str] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+    preferred_gathering_type: Optional[str] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class UserLocationUpdate(BaseModel):
+    city: Optional[str] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+
+
+class UserGatheringTypeUpdate(BaseModel):
+    preferred_gathering_type: GatheringType
 
 class UserAvailabilityCreate(BaseModel):
     day_of_week: int  # 0 = Monday, 6 = Sunday
@@ -79,6 +93,33 @@ class UserPreferredCategoryOut(BaseModel):
     class Config:
         from_attributes = True
 
+
+class UserPreferredMechanicCreate(BaseModel):
+    mechanic_id: int
+
+class UserPreferredMechanicOut(BaseModel):
+    user_id: UUID
+    mechanic_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CategoryOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class MechanicOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
 class GameCreate(BaseModel):
     name: str
     min_players: int = 2
@@ -97,7 +138,6 @@ class GameOut(BaseModel):
 
 
 class MatchRequestCreate(BaseModel):
-    user_id: UUID
     game_id: int
 
 
@@ -113,7 +153,6 @@ class MatchRequestOut(BaseModel):
 
 
 class FriendshipCreate(BaseModel):
-    user_id: UUID
     friend_id: UUID
 
 
@@ -138,7 +177,6 @@ class EventCreate(BaseModel):
     scheduled_at: datetime
     capacity: Optional[int] = None
     visibility: str = "public"
-    created_by: UUID
 
 
 class EventOut(BaseModel):
@@ -158,7 +196,6 @@ class EventOut(BaseModel):
 
 
 class EventAttendeeCreate(BaseModel):
-    user_id: UUID
     rsvp_status: str = "going"
 
 

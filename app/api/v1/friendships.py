@@ -63,7 +63,7 @@ def update_friendship (
     return friendship
 
 
-@router.get("/me/friends", response_model=list[schemas.FriendshipOut])
+@router.get("/friendships/me/friends", response_model=list[schemas.FriendshipOut])
 def list_my_friends(
     db: Session = Depends(get_db),
     current_user: schemas.TokenData = Depends(get_current_user_id)
@@ -71,7 +71,7 @@ def list_my_friends(
     return (
         db.query(models.Friendship)
         .filter(
-            models.Friendships.status == "accepted",
+            models.Friendship.status == "accepted",
             or_(
                 models.Friendship.user_id == current_user.user_id,
                 models.Friendship.friend_id == current_user.user_id

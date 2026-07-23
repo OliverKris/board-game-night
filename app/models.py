@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Table,
+    Time,
     PrimaryKeyConstraint
 )
 import uuid
@@ -30,6 +31,10 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
+    city = Column(String, nullable=True)
+    latitude = Column(String, nullable=True)
+    longitude = Column(String, nullable=True)
+    preferred_gathering_type = Column(String, nullable=True)  # small_group, store_event, large_event
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     games = relationship("Game", secondary=user_games, back_populates="owners")
@@ -100,4 +105,65 @@ class EventAttendee(Base):
     rsvp_status = Column(String, default="invited")  # invited, going, declined, waitlisted
 
     event = relationship("Event")
+    user = relationship("User")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
+
+class Mechanic(Base):
+    __tablename__ = "mechanics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
+
+class WantedGame(Base):
+    """Games a user wants to play, distinct from user_games (games they own)."""
+    __tablename__ = "wanted_games"
+    __table_args__ = (PrimaryKeyConstraint("user_id", "game_id"),)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    game_id = Column(Integer, ForeignKey("games.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    game = relationship("Game")
+
+
+class UserPreferredCategory(Base):
+    __tablename__ = "user_preferred_categories"
+    __table_args__ = (PrimaryKeyConstraint("user_id", "category_id"),)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+
+    user = relationship("User")
+    category = relationship("Category")
+
+
+class UserPreferredMechanic(Base):
+    __tablename__ = "user_preferred_mechanics"
+    __table_args__ = (PrimaryKeyConstraint("user_id", "mechanic_id"),)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    mechanic_id = Column(Integer, ForeignKey("mechanics.id"), nullable=False)
+
+    user = relationship("User")
+    mechanic = relationship("Mechanic")
+
+
+class Availability(Base):
+    __tablename__ = "availability"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    day_of_week = Column(Integer, nullable=False)  # 0=Monday ... 6=Sunday
+    start_time = Column(Time, nullable=False)
+    end_time = Column(Time, nullable=False)
+
     user = relationship("User")
