@@ -10,5 +10,12 @@ export default defineConfig({
         watch: {
             usePolling: true,
         },
+        proxy: {
+            // Forwards any request starting with /api to FastAPI inside Docker
+            '/api': {
+                target: 'http://api:8000',
+                changeOrigin: true,
+            },
+        },
     },
 });

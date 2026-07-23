@@ -8,7 +8,7 @@ from app.database import get_db
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.post("/users", response_model=schemas.UserOut)
+@router.post("", response_model=schemas.UserOut)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter(models.User.email == user.email).first()
     if existing:
@@ -21,7 +21,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 
-@router.get("/users/{user_id}", response_model=schemas.UserOut)
+@router.get("/{user_id}", response_model=schemas.UserOut)
 def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
@@ -29,7 +29,7 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/users/{user_id}/games/{game_id}")
+@router.post("/{user_id}/games/{game_id}")
 def add_game_to_user(user_id: UUID, game_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     game = db.query(models.Game).filter(models.Game.id == game_id).first()
