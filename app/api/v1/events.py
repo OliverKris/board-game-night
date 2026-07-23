@@ -9,7 +9,7 @@ router = APIRouter(prefix="/events", tags=["Events"])
 
 @router.post("", response_model=schemas.EventOut)
 def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
-    db_event = models.Event(**event.dict)
+    db_event = models.Event(**event.dict())
     db.add(db_event)
     db.commit()
     db.refresh(db_event)

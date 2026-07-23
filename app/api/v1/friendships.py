@@ -57,8 +57,8 @@ def list_friends(user_id: UUID, db: Session = Depends(get_db)):
     return (
         db.query(models.Friendship)
         .filter(
-            models.friendships.status == "accepted",
-            models.Friendship.user_id == user_id | (models.Friendship.friend_id == user_id)
+            models.Friendships.status == "accepted",
+            (models.Friendship.user_id == user_id) | (models.Friendship.friend_id == user_id)
         )
         .all()
     )

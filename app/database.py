@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 # override it to point at localhost
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "prostgresql://boardgame:boardgame@localhost:5432/meeple_up",
+    "protgresql://boardgame:boardgame@localhost:5432/meeple_up",
 )
 
 engine = create_engine(DATABASE_URL)

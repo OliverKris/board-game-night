@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 });
 
 // Response Interceptor: Catch 401s globally
-api.interceptors.request.use(
+api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {

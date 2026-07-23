@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 class GatheringType(str, Enum):
     SMALL_GROUP = "small_group"
     STORE_EVENT = "store_event"
-    SMALL_EVENT = "large_event"
+    LARGE_EVENT = "large_event"
 
 class RecurrenceType(str, Enum):
     ONE_TIME = "one_time"
@@ -158,13 +158,13 @@ class EventOut(BaseModel):
 
 
 class EventAttendeeCreate(BaseModel):
-    user_id: int
+    user_id: UUID
     rsvp_status: str = "going"
 
 
 class EventAttendeeOut(BaseModel):
     event_id: int
-    user_id: int
+    user_id: UUID
     rsvp_status: str
 
     class Config:
