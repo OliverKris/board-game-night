@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+ENV/
+
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+.agents
+.claude
+.windsurf
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# React / Vite / Build Outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Prisma
+/app/generated/prisma
+prisma/migrations/dev.db
+*.db
+*.sqlite
+
+# IDEs & System Files (especially on Windows)
+.vscode/
+.idea/
+.ds_store
+Thumbs.db
+*.log

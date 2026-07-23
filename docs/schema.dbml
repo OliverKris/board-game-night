@@ -1,0 +1,227 @@
+// docs/schema.dbml
+// MeepleUp - schema.dbml
+// Organized in sections: Identity & Social, Groups & Events, Content, Games & BGG metadata.
+
+// ---------------------------------------------------
+// IDENTITY & SOCIAL
+// ---------------------------------------------------
+
+Table users {
+    id uuid [pk, default: `gen_random_uuid()`]
+    name varchar [not null]
+    email varchar [not null, unique]
+    bio text
+    profile_picture_url varchar
+    city varchar [note: 'coarse location for "nearby" matching; see locations for precise points']
+    created_at timestamp [default: `now()`]
+}
+
+Table friendships {
+    user_id uuid [ref: > users.id]
+    friend_id int [ref: > users.id]
+    status varchar [default: 'pending', note: 'pending, accepted, blocked']
+    created_at timestamp [default: `now()`]
+
+    indexes {
+        (user_id, friend_id) [pk]
+    }
+}
+
+Table locations {
+    id int [pk, increment]
+    user_id uuid [ref: > users.id]
+    label varchar [note: 'e.g. "Home", "Board game cafe downtown"']
+    latitude decimal
+    longitude decimal
+}
+
+
+// ---------------------------------------------------
+// GROUPS & EVENTS
+// A "group" is a persistent community (a local club).
+// An "event" is one scheduled gathering - may or may not belong to a group.
+// ---------------------------------------------------
+
+Table groups {
+    id int [pk, increment]
+    name varchar [not null]
+    description text
+    is_public boolean [default: true]
+    created_by int [ref: > users.id]
+    created_at timestamp [default: `now()`]
+}
+
+Table group_members {
+    group_id int [ref: > groups.id]
+    user_id uuid [ref: > users.id]
+    role varcahr [default: 'member', note: 'member, admin']
+    joined_at timestamp [default: `now()`]
+
+    indexes {
+        (group_id, user_id) [pk]
+    }
+}
+
+Table match_requests {
+    id int [pk, increment]
+    user_id uuid [ref: > users.id, not null]
+    game_id int [ref: > games.id, not null]
+    status varchar [default: 'pending', note: 'pending, matched, cancelled']
+    created_at timestamp [default: `now()`]
+}
+
+Table events {
+    id int [pk, increment]
+    title varchar [not null]
+    description text
+    game_id int [ref: > games.id]
+    group_id int [ref: > groups.id, note: 'null if this is a one-off event not tied to a club']
+    location_id int [ref: > locations.id]
+    scheduled_at timestamp [not null]
+    capcity int [note: 'null = unlimited']
+    visibility varchar [default: 'public', note: 'public, group_only, invite_only']
+    status varchar [default: 'scheduled', note: 'scheduled, completed, cancelled']
+    created_by int [ref: > users.id]
+    created_at timestamp [default: `now()`]
+}
+
+Table event_attendees {
+    event_id int [ref: > events.id]
+    user_id uuid [ref: > users.id]
+    rsvp_status varchar [default: 'invited', note: 'invited, going, declined, waitlisted']
+
+    indexes {
+        (event_id, user_id) [pk]
+    }
+}
+
+
+// ---------------------------------------------------
+// CONTENT (posts, comments, media)
+// A post can belong to a user's own feed, a group, or an event's page -
+// exactly one of group_id / event_id should be set, or neither for a
+// plain personal post.
+// ---------------------------------------------------
+
+Table posts {
+    id int [pk, increment]
+    user_id uuid [ref: > users.id, not null]
+    group_id int [ref: > groups.id]
+    event_id int [ref: > events.id]
+    context text
+    image_url varchar
+    created_at timestamp [default: `now()`]
+}
+
+Table post_likes {
+    post_id int [ref: > posts.id]
+    user_id uuid [ref: > users.id]
+
+    indexes {
+        (post_id, user_id) [pk]
+    }
+}
+
+Table post_comments {
+    id int [pk, increment]
+    post_id int [ref: > posts.id]
+    user_id uuid [ref: > users.id]
+    content text [not null]
+    created_at timestamp [default: `now()`]
+}
+
+
+// ---------------------------------------------------
+// GAMES & BGG METADATA
+// bgg_id is the link to BoardGGameGeek; everything else is a local cache
+// synced periodically (a scheduled job, not fetched live per-request).
+// ---------------------------------------------------
+
+Table games {
+    id int [pk, increment]
+    bbg_id int [unique, note: 'BoardGameGeek thing ID']
+    name varchar [not null]
+    description text
+    min_players int
+    max_players int
+    playtime_min int
+    playtime_max int
+    weight decimal [note: 'BGG "complexity" rating, 1.0-5.0']
+    image_url varchar
+    year_published int
+    bgg_rating decimal [note: 'BGG average rating, cached']
+    bgg_rating_count int
+    last_synced_at timestamp [note: 'when we last refreshed this from BGG']
+}
+
+Table publishers {
+    id int [pk, increment]
+    name varchar [unique, not null]
+}
+
+Table game_publishers {
+    game_id int [ref: > games.id]
+    publisher_id int [ref: > publishers.id]
+
+    indexes {
+        (game_id, publisher_id) [pk]
+    }
+}
+
+Table categories {
+    id int [pk, increment]
+    name varchar [unique, note: 'BGG category, e.g. "Strategy", "Card Game"']
+}
+
+Table game_categories {
+    game_id int [ref: > games.id]
+    category_id int [ref: > categories.id]
+
+    indexes {
+        (game_id, category_id) [pk]
+    }
+}
+
+Table mechanics {
+    id int [pk, increment]
+    name varchar [unique, note: 'BGG mechanic, e.g. "Worker Placement", "Deck Building"']
+}
+
+Table game_mechanics {
+    game_id int [ref: > games.id]
+    mechanic_id int [ref: > mechanics.id]
+
+    indexes {
+        (game_id, mechanic_id) [pk]
+    }
+}
+
+// Many-to-many: which users own which games (unchanged from before)
+Table user_games {
+    user_id uuid [ref: > users.id]
+    game_id int [ref: > games.id]
+
+    indexes {
+        (user_id, game_id) [pk]
+    }
+}
+
+// Local ratings - distinct from bgg_rating
+Table ratings {
+    id int [pk, increment]
+    user_id uuid [ref: > users.id, not null]
+    game_id int [ref: > games.id, not null]
+    score int [note: '1-5']
+    comment text
+    created_at timestamp [default: `now()`]
+    indexes {
+        (user_id, game_id) [unique]
+    }
+}
+
+// Future ideas:
+// - notifications (audit log of sent emails/SMS)
+// - direct messages between users
+// - badges/achievements
+// - polymorphic media table if photos need to attach to more than
+//   posts/events (such as profile galleries)
