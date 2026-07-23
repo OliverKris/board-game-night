@@ -1,8 +1,30 @@
-import axios from 'axios';
+import axios from "axios";
 
 export const api = axios.create({
-    baseURL: '/api/v1',
+    baseURL: "/api/v1",
+    timeout: 500,
     headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
     },
 });
+
+// Request Interceptor: Attach token
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// Response Interceptor: Catch 401s globally
+api.interceptors.request.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("access_token");
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
+    },
+);

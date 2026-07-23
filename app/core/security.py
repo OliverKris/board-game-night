@@ -32,7 +32,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: Optional[timede
     }
 
     encoded_jwt = jwt.encode(
-        to_encode, settings.SECURITY_KEY, algorithm=settings.ALGORITHM
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
 
@@ -40,7 +40,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: Optional[timede
 def decode_access_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(
-            token, settings.SECURITY_KEY, algorithm=[settings.ALGORITHM]
+            token, settings.SECRET_KEY, algorithm=[settings.ALGORITHM]
         )
         return payload
     except jwt.PyJWTError:

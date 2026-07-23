@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class GatheringType(str, Enum):
     SMALL_GROUP = "small_group"
@@ -29,6 +29,19 @@ class GroupStatus(str, Enum):
 # 1. User & User Preferences
 # ========================================
 
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+
+class UserOut(BaseModel):
+    id: UUID
+    name: str
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class UserAvailabilityCreate(BaseModel):
     day_of_week: int  # 0 = Monday, 6 = Sunday
@@ -42,10 +55,6 @@ class UserAvailabilityOut(UserAvailabilityCreate):
 
     class Config:
         from_attributes = True
-
-class UserCreate(BaseModel):
-    name: str
-    email: EmailStr
 
 # Requirement #1: Games Wanted
 class UserWantedGameCreate(BaseModel):
@@ -70,27 +79,11 @@ class UserPreferredCategoryOut(BaseModel):
     class Config:
         from_attributes = True
 
-class UserCreate(BaseModel):
-    name: str
-    email: EmailStr
-    preferred_gathering_type: Optional[GatheringType]
-
-class UserOut(BaseModel):
-    id: UUID
-    name: str
-    email: EmailStr
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
 class GameCreate(BaseModel):
     name: str
     min_players: int = 2
     max_players: int = 4
     bgg_id: Optional[int] = None
-
 
 class GameOut(BaseModel):
     id: int

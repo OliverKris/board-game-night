@@ -26,11 +26,3 @@ if settings.BACKEND_CORS_ORIGINS:
 @app.get("/health")
 def root_health():
     return {"status": "ok", "type": "root_health"}
-
-api_v1 = APIRouter(prefix="/api/v1")
-
-@api_v1.get("/health")
-def health_check():
-    return {"status": "ok", "type": "api_v1_health"}
-
-app.include_router(api_v1)

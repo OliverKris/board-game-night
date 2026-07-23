@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
+from app.api.dependencies import get_current_user_id
+from app.schemas import TokenData
 
 router = APIRouter(prefix="/games", tags=["Games"])
 
@@ -17,5 +19,8 @@ def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=list[schemas.GameOut])
-def list_games(db: Session = Depends(get_db)):
+def list_games(
+    db: Session = Depends(get_db),
+    curr_user: TokenData = Depends(get_current_user_id)
+):
     return db.query(models.Game).all()
